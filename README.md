@@ -21,8 +21,9 @@
 10. [Tech Stack](#tech-stack)
 11. [Roadmap](#roadmap)
 12. [Whitepaper Generation](#whitepaper-generation)
-13. [Contributing](#contributing)
-14. [Contact](#contact)
+13. [Running Tests](#running-tests)
+14. [Contributing](#contributing)
+15. [Contact](#contact)
 
 ---
 
@@ -87,7 +88,6 @@ stablecoins — real, stable value delivered directly to their wallets.
 ---
 
 ## Platform Architecture
-
 ```
 ┌─────────────────────────────────────────────────────┐
 │                     LEARNVAULT                       │
@@ -184,7 +184,6 @@ Shareable with employers, DAOs, and the broader ecosystem.
 ## The Earn Loop
 
 LearnVault's flywheel is designed so that effort compounds over time:
-
 ```
 Complete Lesson
        │
@@ -329,13 +328,36 @@ two-step build process:
 
    ```bash
    npx @mermaid-js/mermaid-cli -i docs/architecture.mmd -o docs/architecture.png
-   ```
+```
 
 2. **Generate the PDF:** Once the diagrams are compiled and embedded as standard
    markdown image links, generate the final PDF using `md-to-pdf`:
    ```bash
    npx md-to-pdf docs/whitepaper.md
-   ```
+```
+
+---
+
+## Running Tests
+
+### Prerequisites
+
+Ensure you have Rust and Cargo installed:
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Install cargo-watch for watch mode:
+```bash
+cargo install cargo-watch
+```
+
+### Run Tests
+```bash
+npm test                 # runs all Soroban contract tests
+npm run test:contracts   # alias for the above
+npm run test:watch       # re-runs tests on file changes
+```
 
 ---
 
