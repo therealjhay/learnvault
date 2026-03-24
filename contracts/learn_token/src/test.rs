@@ -1,6 +1,7 @@
 extern crate std;
 
 use soroban_sdk::{testutils::{Address as _, Events as _}, Address, Env, IntoVal, String};
+use soroban_sdk::{Address, Env, testutils::Address as _};
 
 use crate::{LRNError, LearnToken, LearnTokenClient};
 

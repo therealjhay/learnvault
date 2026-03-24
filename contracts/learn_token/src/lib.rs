@@ -14,8 +14,8 @@
 //! Implements: https://github.com/bakeronchain/learnvault/issues/5
 
 use soroban_sdk::{
-    contract, contracterror, contractevent, contractimpl, contracttype, panic_with_error,
-    symbol_short, Address, Env, String, Symbol,
+    Address, Env, String, Symbol, contract, contracterror, contractevent, contractimpl,
+    contracttype, panic_with_error, symbol_short,
 };
 
 // ---------------------------------------------------------------------------
@@ -75,6 +75,14 @@ pub struct MilestoneCompleted {
 #[contract]
 pub struct LearnToken;
 
+#[contractevent(topics = ["mint"])]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LRNMinted {
+    #[topic]
+    pub learner: Address,
+    pub amount: i128,
+}
+
 #[contractimpl]
 impl LearnToken {
     /// Initialise the contract.
@@ -99,10 +107,8 @@ impl LearnToken {
     // Admin
     // -----------------------------------------------------------------------
 
-    /// Mint `amount` LRN to `to` for completing `course_id`.
-    ///
-    /// Only callable by the admin. Emits a `MilestoneCompleted` event.
-    pub fn mint(env: Env, to: Address, amount: i128, course_id: String) {
+    /// Mint `amount` LRN to `to`.  Only callable by the admin.
+    pub fn mint(env: Env, to: Address, amount: i128) {
         let admin: Address = env
             .storage()
             .instance()
@@ -116,11 +122,7 @@ impl LearnToken {
 
         // Update balance
         let balance_key = DataKey::Balance(to.clone());
-        let current_balance: i128 = env
-            .storage()
-            .persistent()
-            .get(&balance_key)
-            .unwrap_or(0);
+        let current_balance: i128 = env.storage().persistent().get(&balance_key).unwrap_or(0);
         env.storage()
             .persistent()
             .set(&balance_key, &(current_balance + amount));
@@ -135,11 +137,9 @@ impl LearnToken {
             .instance()
             .set(&DataKey::TotalSupply, &(total_supply + amount));
 
-        // Emit MilestoneCompleted(learner, amount, course_id)
-        MilestoneCompleted {
+        LRNMinted {
             learner: to,
             amount,
-            course_id,
         }
         .publish(&env);
     }
@@ -212,13 +212,7 @@ impl LearnToken {
         panic_with_error!(&env, LRNError::Soulbound)
     }
 
-    pub fn transfer_from(
-        env: Env,
-        _spender: Address,
-        _from: Address,
-        _to: Address,
-        _amount: i128,
-    ) {
+    pub fn transfer_from(env: Env, _spender: Address, _from: Address, _to: Address, _amount: i128) {
         panic_with_error!(&env, LRNError::Soulbound)
     }
 
