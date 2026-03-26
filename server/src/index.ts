@@ -26,6 +26,7 @@ import { leaderboardRouter } from "./routes/leaderboard.routes"
 import { createMeRouter } from "./routes/me.routes"
 import { scholarsRouter } from "./routes/scholars.routes"
 import { scholarshipsRouter } from "./routes/scholarships.routes"
+import { treasuryRouter } from "./routes/treasury.routes"
 import { uploadRouter } from "./routes/upload.routes"
 import { validatorRouter } from "./routes/validator.routes"
 import { createAuthService } from "./services/auth.service"
@@ -137,6 +138,7 @@ app.use("/api", scholarsRouter)
 app.use("/api", uploadRouter)
 app.use("/api", enrollmentsRouter)
 app.use("/api", scholarshipsRouter)
+app.use("/api", treasuryRouter)
 
 // Start event poller (non-prod only for now)
 if (process.env.NODE_ENV !== "production") {
