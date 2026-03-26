@@ -3,9 +3,10 @@
 ## Overview
 
 This implementation adds two new API endpoints to fetch real treasury data from
-the ScholarshipTreasury smart contract on Stellar/Soroban.
+the ScholarshipTreasury smart contract on Stellar/Soroban, and connects the
+frontend Treasury page to consume this data.
 
-## Endpoints
+## Backend Endpoints
 
 ### GET /api/treasury/stats
 
@@ -48,6 +49,17 @@ Returns recent treasury activity with pagination.
 }
 ```
 
+## Frontend Integration
+
+The Treasury page (`src/pages/Treasury.tsx`) now:
+
+- Fetches real-time stats and activity on component mount
+- Displays loading states while fetching data
+- Formats USDC amounts from stroops (divides by 10^7)
+- Formats addresses and timestamps for better UX
+- Shows "No activity yet" when no events exist
+- Handles API errors gracefully
+
 ## Files Created
 
 - `server/src/controllers/treasury.controller.ts` - Business logic
@@ -56,7 +68,22 @@ Returns recent treasury activity with pagination.
 ## Files Modified
 
 - `server/src/index.ts` - Registered treasury routes
+- `src/pages/Treasury.tsx` - Connected to API endpoints
+- `.env.example` - Added VITE_SERVER_URL configuration
 
 ## Configuration
 
-Requires `SCHOLARSHIP_TREASURY_CONTRACT_ID` in `.env`
+### Backend (.env in server/)
+
+Requires `SCHOLARSHIP_TREASURY_CONTRACT_ID` in `server/.env`
+
+### Frontend (.env in root)
+
+Requires `VITE_SERVER_URL` (defaults to http://localhost:4000)
+
+## Testing
+
+1. Start the backend: `cd server && npm run dev`
+2. Start the frontend: `npm run dev`
+3. Visit http://localhost:5173/treasury
+4. Verify stats and activity load from the API
