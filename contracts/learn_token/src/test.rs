@@ -2,9 +2,9 @@
 
 use proptest::prelude::*;
 use soroban_sdk::{
+    Address, Env,
     testutils::{Address as _, Ledger},
     token::{StellarAssetClient, TokenClient},
-    Address, Env,
 };
 
 proptest! {
@@ -21,7 +21,7 @@ proptest! {
         // Register the standard generic Soroban token (LearnToken equivalent)
         let token_contract_id = env.register_stellar_asset_contract_v2(admin.clone());
         let token_id = token_contract_id.address();
-        
+
         let client = StellarAssetClient::new(&env, &token_id);
         let token_client = TokenClient::new(&env, &token_id);
 
@@ -38,9 +38,14 @@ proptest! {
         let balance = token_client.balance(&user);
         assert_eq!(balance, safe_amount);
     }
+} // close proptest!
+
 extern crate std;
 
-use soroban_sdk::{Address, Env, IntoVal, testutils::{Address as _, Events as _}};
+use soroban_sdk::{
+    IntoVal,
+    testutils::{Address as _, Events as _},
+};
 
 use crate::{LRNError, LearnToken, LearnTokenClient};
 
@@ -194,4 +199,12 @@ fn total_supply_starts_at_zero() {
     let e = Env::default();
     let (_, _, client) = setup(&e);
     assert_eq!(client.total_supply(), 0);
+}
+
+#[test]
+fn get_version_returns_semver() {
+    let e = Env::default();
+    let (_, _, client) = setup(&e);
+    let version = client.get_version();
+    assert_eq!(version, soroban_sdk::String::from_str(&e, "1.0.0"));
 }
