@@ -243,6 +243,17 @@ export const initDb = async () => {
                 );
                 CREATE INDEX IF NOT EXISTS idx_enrollments_learner_address ON enrollments (learner_address);
                 CREATE INDEX IF NOT EXISTS idx_enrollments_course_id ON enrollments (course_id);
+                CREATE TABLE IF NOT EXISTS notifications (
+                    id SERIAL PRIMARY KEY,
+                    recipient_address TEXT NOT NULL,
+                    type TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    href TEXT,
+                    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_notifications_recipient
+                    ON notifications (recipient_address, created_at DESC);
             `)
 			client.release()
 			console.log("Postgres database initialized")

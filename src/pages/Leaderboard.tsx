@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import AddressDisplay from "../components/AddressDisplay"
+import { LeaderboardRowSkeleton } from "../components/SkeletonLoader"
 import { useWallet } from "../hooks/useWallet"
 import { type LeaderboardEntry } from "../util/mockLeaderboardData"
 
@@ -80,7 +81,7 @@ const Leaderboard: React.FC = () => {
 	}
 
 	return (
-		<div className="p-6 md:p-12 max-w-6xl mx-auto text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
+		<div aria-busy={isLoading} className="p-6 md:p-12 max-w-6xl mx-auto text-white animate-in fade-in slide-in-from-bottom-8 duration-1000">
 			<header className="mb-12 text-center">
 				<h1 className="text-5xl md:text-6xl font-black mb-4 tracking-tighter text-gradient">
 					{t("pages.leaderboard.title")}
@@ -91,18 +92,7 @@ const Leaderboard: React.FC = () => {
 			</header>
 
 			{isLoading ? (
-				<div className="glass-card p-20 rounded-[4rem] text-center border border-white/5">
-					<div className="text-6xl mb-8 animate-bounce">Trophy</div>
-					<h2 className="text-3xl font-black mb-4">Synchronizing Data</h2>
-					<p className="text-white/40 max-w-md mx-auto mb-10 leading-relaxed font-medium">
-						Retrieving real-time scholar rankings from the Stellar network...
-					</p>
-					<div className="flex justify-center gap-3">
-						<div className="w-3 h-3 bg-brand-cyan rounded-full animate-pulse" />
-						<div className="w-3 h-3 bg-brand-blue rounded-full animate-pulse delay-75" />
-						<div className="w-3 h-3 bg-brand-purple rounded-full animate-pulse delay-150" />
-					</div>
-				</div>
+				<LeaderboardRowSkeleton />
 			) : error ? (
 				<div className="glass-card p-20 rounded-[4rem] text-center border border-red-500/20 bg-red-500/5">
 					<div className="text-6xl mb-8">Warning</div>

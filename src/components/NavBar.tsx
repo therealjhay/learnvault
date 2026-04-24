@@ -1,6 +1,7 @@
 import { useId, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink } from "react-router-dom"
+import { NotificationBell } from "./NotificationBell"
 import { ReputationBadge } from "./ReputationBadge"
 import { WalletButton } from "./WalletButton"
 
@@ -8,6 +9,7 @@ export default function NavBar() {
 	const [menuOpen, setMenuOpen] = useState(false)
 	const menuId = useId()
 	const { t } = useTranslation()
+	const token = localStorage.getItem("auth_token") ?? undefined
 
 	const navLinks = [
 		{ to: "/courses", label: t("nav.learn") },
@@ -63,6 +65,7 @@ export default function NavBar() {
 						size="sm"
 						showBalance
 					/>
+					<NotificationBell token={token} />
 					<div className="hidden sm:block scale-90">
 						<WalletButton />
 					</div>

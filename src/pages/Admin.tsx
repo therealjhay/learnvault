@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import {
+	RadialBarChart,
+	RadialBar,
+	Legend,
+	ResponsiveContainer,
+	Tooltip,
+} from "recharts"
 import TxHashLink from "../components/TxHashLink"
+
+const API_BASE = import.meta.env.VITE_SERVER_URL || "http://localhost:4000"
 
 type AdminSection =
 	| "courses"
 	| "milestones"
 	| "users"
 	| "treasury"
+	| "scholarships"
 	| "contracts"
 type CourseStatus = "draft" | "published"
 
@@ -36,6 +46,7 @@ const sectionDescriptions: Record<AdminSection, string> = {
 	milestones: "Review milestone reports and approvals.",
 	users: "Lookup learner profiles by wallet address.",
 	treasury: "Monitor and manage treasury controls.",
+	scholarships: "View scholarship program health metrics.",
 	contracts: "Inspect deployed on-chain contract records.",
 }
 
@@ -80,7 +91,7 @@ const Admin: React.FC = () => {
 			<aside className="w-72 glass border-r border-white/5 p-8 flex flex-col gap-8">
 				<nav className="flex flex-col gap-2">
 					{(
-						["courses", "milestones", "users", "treasury", "contracts"] as const
+						["courses", "milestones", "users", "treasury", "scholarships", "contracts"] as const
 					).map((section) => (
 						<button
 							key={section}
@@ -106,6 +117,7 @@ const Admin: React.FC = () => {
 				{activeSection === "milestones" && <MilestoneQueue />}
 				{activeSection === "users" && <UserLookup />}
 				{activeSection === "treasury" && <TreasuryControls />}
+				{activeSection === "scholarships" && <ScholarshipMetrics />}
 				{activeSection === "contracts" && <ContractInfo />}
 			</main>
 		</div>
@@ -241,6 +253,121 @@ const ContractInfo: React.FC = () => {
 					<strong>{contract.name}</strong> {contract.updated}
 				</div>
 			))}
+		</section>
+	)
+}
+
+interface ScholarshipMetricsData {
+	active_scholarships: number
+	total_scholars: number
+	completion_rate: number
+	avg_milestones_per_scholar: number
+	dropout_rate: number
+	total_usdc_disbursed: number
+}
+
+const ScholarshipMetrics: React.FC = () => {
+	const [metrics, setMetrics] = useState<ScholarshipMetricsData | null>(null)
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(() => {
+		const fetchMetrics = async () => {
+			try {
+				const res = await fetch(`${API_BASE}/api/scholarships/metrics`)
+				if (!res.ok) throw new Error(`HTTP ${res.status}`)
+				const data = await res.json()
+				setMetrics(data)
+			} catch (err) {
+				setError("Failed to load metrics")
+			} finally {
+				setLoading(false)
+			}
+		}
+		void fetchMetrics()
+	}, [])
+
+	const chartData = metrics
+		? [
+				{
+					name: "Completion Rate",
+					value: metrics.completion_rate,
+					fill: "#00d2ff",
+				},
+				{
+					name: "Dropout Rate",
+					value: metrics.dropout_rate,
+					fill: "#ff4d4d",
+				},
+			]
+		: []
+
+	return (
+		<section aria-busy={loading}>
+			<h2 className="text-2xl font-black mb-6">Scholarship Program Health</h2>
+
+			{loading && (
+				<div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<div key={i} className="h-24 rounded-2xl bg-white/5 animate-pulse" />
+					))}
+				</div>
+			)}
+
+			{error && (
+				<p className="text-red-400 mb-6">{error}</p>
+			)}
+
+			{metrics && (
+				<>
+					<div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+						{[
+							{ label: "Active Scholarships", value: metrics.active_scholarships },
+							{ label: "Total Scholars", value: metrics.total_scholars },
+							{
+								label: "Completion Rate",
+								value: `${metrics.completion_rate}%`,
+							},
+							{
+								label: "Avg Milestones / Scholar",
+								value: metrics.avg_milestones_per_scholar,
+							},
+							{ label: "Dropout Rate", value: `${metrics.dropout_rate}%` },
+							{
+								label: "Total USDC Disbursed",
+								value: `$${(metrics.total_usdc_disbursed / 1e7).toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+							},
+						].map(({ label, value }) => (
+							<div
+								key={label}
+								className="glass-card p-5 rounded-2xl border border-white/5"
+							>
+								<p className="text-xs uppercase tracking-widest text-white/40 mb-1">
+									{label}
+								</p>
+								<p className="text-2xl font-black text-brand-cyan">{value}</p>
+							</div>
+						))}
+					</div>
+
+					<div className="glass-card p-6 rounded-2xl border border-white/5">
+						<h3 className="text-lg font-bold mb-4">Completion vs Dropout</h3>
+						<ResponsiveContainer width="100%" height={260}>
+							<RadialBarChart
+								cx="50%"
+								cy="50%"
+								innerRadius="30%"
+								outerRadius="80%"
+								data={chartData}
+							>
+								<RadialBar dataKey="value" label={{ position: "insideStart", fill: "#fff" }} />
+								<Legend />
+								<Tooltip formatter={(value: number) => `${value}%`} />
+							</RadialBarChart>
+						</ResponsiveContainer>
+					</div>
+				</>
+			)}
 		</section>
 	)
 }
