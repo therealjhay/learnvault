@@ -219,6 +219,8 @@ export const milestoneStore = {
 			 ${whereClause}
 			 ORDER BY submitted_at DESC
 			 LIMIT $${limitParam} OFFSET $${offsetParam}`,
+			 LIMIT $${rowValues.length - 1}
+			 OFFSET $${rowValues.length}`,
 			rowValues,
 		)
 
