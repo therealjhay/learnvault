@@ -1,9 +1,7 @@
-import jwt from "jsonwebtoken"
 import { type NextFunction, type Request, type Response } from "express"
 import jwt from "jsonwebtoken"
 
 import { type JwtService } from "../services/jwt.service"
-
 
 // ---------------------------------------------------------------------------
 // Factory-based auth (used by routes that receive jwtService via DI)
@@ -33,7 +31,8 @@ export function createRequireAuth(jwtService: JwtService) {
 			;(req as AuthRequest).user = { address: sub }
 			next()
 		} catch (err) {
-			const message = err instanceof Error ? err.message : "Invalid or expired token"
+			const message =
+				err instanceof Error ? err.message : "Invalid or expired token"
 			res.status(401).json({ error: message })
 		}
 	}
@@ -53,7 +52,6 @@ export interface AuthRequest extends Request {
 	walletAddress?: string
 }
 
-
 export const authMiddleware = (
 	req: AuthRequest,
 	res: Response,
@@ -72,7 +70,10 @@ export const authMiddleware = (
 				algorithms: ["RS256"],
 			}) as { sub?: string; address?: string }
 		} else {
-			decoded = jwt.verify(token, JWT_SECRET) as { sub?: string; address?: string }
+			decoded = jwt.verify(token, JWT_SECRET) as {
+				sub?: string
+				address?: string
+			}
 		}
 
 		const address = decoded.sub ?? decoded.address
@@ -85,4 +86,3 @@ export const authMiddleware = (
 		return res.status(401).json({ error: "Invalid token" })
 	}
 }
-

@@ -9,6 +9,7 @@ import {
 	getPoolMetrics,
 	resetPoolAlerts,
 } from "../controllers/metrics.controller"
+import { pool } from "../db"
 
 export const healthRouter = Router()
 
@@ -243,7 +244,35 @@ const deriveOverallStatus = (
  *             schema:
  *               $ref: '#/components/schemas/HealthResponse'
  */
-healthRouter.get("/health", getHealth)
+healthRouter.get("/health", async (req, res) => {
+	const [database, redis, stellarHorizon] = await Promise.all([
+		checkDatabase(),
+		checkRedis(),
+		checkHorizon(),
+	])
+
+	const overallStatus = deriveOverallStatus(
+		database.status,
+		redis.status,
+		stellarHorizon.status,
+	)
+
+	const statusCode = overallStatus === "unhealthy" ? 503 : 200
+
+	res.status(statusCode).json({
+		status: overallStatus,
+		version: appVersion,
+		commitHash: resolveGitCommitHash(),
+		timestamp: new Date().toISOString(),
+		db: database.status === "healthy" ? "connected" : "disconnected",
+		dbPool: getDbPoolStats(),
+		checks: {
+			database,
+			redis,
+			stellarHorizon,
+		},
+	})
+})
 
 /**
  * @openapi
